@@ -1,95 +1,173 @@
+"use client";
+
 import Image from "next/image";
 import styles from "./page.module.css";
+import styled from 'styled-components';
+import React, { useState } from 'react';
+import Link from 'next/link';
 
-export default function Home() {
+const Home = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState('');
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file);
+    } else {
+      alert('PDF 파일만 업로드 가능합니다.');
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert('업로드할 PDF 파일을 선택해주세요.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      setUploadStatus('업로드 중...');
+      //TO-DO: AI 서버 만들면 URL 바꾸기
+      const response = await fetch('https://your-ai-server.com/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      setUploadStatus(`업로드 완료: ${data.message}`);
+    } catch (error) {
+      console.error('업로드 실패:', error);
+      setUploadStatus('업로드 실패. 다시 시도해주세요.');
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <Container>
+      <LeftSection>
+        <Link href="/interview">
+          <Title>Jemyeonso</Title>
+        </Link>
+        <Subtitle>"제대로 된 면접을 소개합니다"</Subtitle>
+      </LeftSection>
+      <RightSection>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+          id="file-upload"
         />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <AddButton onClick={() => document.getElementById('file-upload').click()}>
+          <PlusIcon>+</PlusIcon>
+          <ButtonText>이력서(.pdf) 업로드</ButtonText>
+        </AddButton>
+        {selectedFile && <FileName>{selectedFile.name}</FileName>}
+        {selectedFile && <UploadButton onClick={handleUpload}>업로드</UploadButton>}
+        {uploadStatus && <UploadStatus>{uploadStatus}</UploadStatus>}
+      </RightSection>
+    </Container>
   );
 }
+
+
+const Container = styled.div`
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+`;
+
+const LeftSection = styled.div`
+  flex: 2;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
+const RightSection = styled.div`
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+`;
+
+const Title = styled.h1`
+  font-family: 'vitro';
+  font-size: 48px;
+  font-weight: 700;
+  color: #6042ff;
+`;
+
+const Subtitle = styled.p`
+  font-size: 18px;
+  color: #5f5f5f;
+  margin-top: 10px;
+`;
+
+const AddButton = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const PlusIcon = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #6042ff;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #4f35d8;
+  }
+`;
+
+const ButtonText = styled.p`
+  font-size: 14px;
+  color: #666;
+`;
+
+const FileName = styled.p`
+  font-size: 14px;
+  color: #333;
+  margin-top: 10px;
+`;
+
+const UploadButton = styled.button`
+  padding: 10px 20px;
+  background-color: #6042ff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #4f35d8;
+  }
+`;
+
+const UploadStatus = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+`;
+
+export default Home;
+
