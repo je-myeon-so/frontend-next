@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import styles from "./page.module.css";
 import styled from 'styled-components';
 import React, { useState } from 'react';
 import Link from 'next/link';
